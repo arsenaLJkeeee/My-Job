@@ -1,0 +1,272 @@
+{
+	"info": {
+		"_postman_id": "630559da-9d7a-436f-b097-6275a7755757",
+		"name": "Authorization stage",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "20408673"
+	},
+	"item": [
+		{
+			"name": "admin",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var cookiefull = postman.getResponseHeader(\"set-cookie\");\r",
+							"//var cookiefull = pm.response.json();\r",
+							"console.log(cookiefull)\r",
+							"var cookie = cookiefull.split(';')[0] //Забрать только value, без ;path...\r",
+							"\r",
+							"pm.environment.set(\"Cookie\", cookie)\r",
+							"console.log(cookie)"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"Cookie\", null)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableCookies": true,
+				"followOriginalHttpMethod": false,
+				"followAuthorizationHeader": false,
+				"followRedirects": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "user[login]",
+							"value": "admin@example.com",
+							"type": "text"
+						},
+						{
+							"key": "user[password]",
+							"value": "extnrflkzntcnf",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{BaseURL}}/users/sign_in",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"users",
+						"sign_in"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "foiv",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var cookiefull = postman.getResponseHeader(\"Set-Cookie\");\r",
+							"\r",
+							"var cookie = cookiefull.split(';')[0]\r",
+							"\r",
+							"pm.environment.set(\"Cookie\", cookie)\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"Cookie\", null)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableCookies": true,
+				"disableUrlEncoding": false,
+				"followRedirects": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "user[login]",
+							"value": "testtesttest@example.com",
+							"type": "text"
+						},
+						{
+							"key": "user[password]",
+							"value": "extnrflkzntcnf",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{BaseURL}}/users/sign_in",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"users",
+						"sign_in"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "current",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const jar = pm.cookies.jar();\r",
+							"\r",
+							"jar.clear(pm.request.url, function (error) {\r",
+							"  // error - <Error>\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disableCookies": true,
+				"followRedirects": false
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "{{Cookie}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{BaseURL}}/users/current",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"users",
+						"current"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "reviews.json",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableCookies": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "{{Cookie}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{BaseURL}}/users/reviews.json",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"users",
+						"reviews.json"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "logout",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{BaseURL}}/esia/user/logout",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"esia",
+						"user",
+						"logout"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
