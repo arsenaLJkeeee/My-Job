@@ -160,12 +160,9 @@
 					}
 				],
 				"url": {
-					"raw": "https://stage-copy.vashkontrol.ru/choosereview",
-					"protocol": "https",
+					"raw": "{{BaseURL}}/choosereview",
 					"host": [
-						"stage-copy",
-						"vashkontrol",
-						"ru"
+						"{{BaseURL}}"
 					],
 					"path": [
 						"choosereview"
@@ -202,12 +199,9 @@
 					}
 				],
 				"url": {
-					"raw": "https://stage-copy.vashkontrol.ru/users/pending_reviews.json",
-					"protocol": "https",
+					"raw": "{{BaseURL}}/users/pending_reviews.json",
 					"host": [
-						"stage-copy",
-						"vashkontrol",
-						"ru"
+						"{{BaseURL}}"
 					],
 					"path": [
 						"users",
@@ -235,8 +229,9 @@
 							"\r",
 							"//берем authorityRegId первого по счету айтема из дропдауна и кладем его в env  \r",
 							"var data = JSON.parse(responseBody);   \r",
-							"pm.environment.set(\"authorityRegId\", data[5].authorityRegId);\r",
-							"pm.environment.set(\"serviceRegId\", data[5].regId);\r",
+							"pm.environment.set(\"authorityRegId\", data[4].authorityRegId);\r",
+							"pm.environment.set(\"serviceRegId\", data[4].regId);\r",
+							"\r",
 							"\r",
 							"\r",
 							"\r",
@@ -263,12 +258,9 @@
 					"raw": "\"кадаст\""
 				},
 				"url": {
-					"raw": "https://stage-copy.vashkontrol.ru/fts/services.json?query=%22%D0%BA%D0%B0%D0%B4%D0%B0%D1%81%D1%82%22",
-					"protocol": "https",
+					"raw": "{{BaseURL}}/fts/services.json?query=%22%D0%BA%D0%B0%D0%B4%D0%B0%D1%81%D1%82%22",
 					"host": [
-						"stage-copy",
-						"vashkontrol",
-						"ru"
+						"{{BaseURL}}"
 					],
 					"path": [
 						"fts",
@@ -319,12 +311,9 @@
 					}
 				],
 				"url": {
-					"raw": "https://stage-copy.vashkontrol.ru/fts/authorities_by_service.json?reg_id={{serviceRegId}}",
-					"protocol": "https",
+					"raw": "{{BaseURL}}/fts/authorities_by_service.json?reg_id={{serviceRegId}}",
 					"host": [
-						"stage-copy",
-						"vashkontrol",
-						"ru"
+						"{{BaseURL}}"
 					],
 					"path": [
 						"fts",
@@ -350,15 +339,34 @@
 							"\r",
 							"\r",
 							"\r",
-							"//нужен скрипт на то чтобы положить id номер отзвыа в env\r",
+							"// Проверяем, что в бади есть стринг review_id, но не более 3 отзывов за сутки по одной услуге, иначе будет фэйл и надо будет менять номер объекта в массивах в 5 запросе seatching for кадаст (запрос номер 5) на следующий([0]->[1]) и записывать его reg_id и authority_reg_id в json.blob\r",
+							"\r",
+							"pm.test(\"Body contains review_id\", function () {\r",
+							"    pm.expect(pm.response.text()).to.include(\"review_id\");\r",
+							"});\r",
+							"\r",
 							"var data = JSON.parse(responseBody);   \r",
 							"pm.environment.set(\"review_id\", data.review_id);\r",
-							"// при одиночном запуске запроса все отлично, а при запуске коллекции падает на этом запросе ругаясь jsonExpect \"<\""
+							"//при одиночном запуске запроса все отлично, а при запуске коллекции падает на //этом запросе ругаясь jsonExpect \"<\"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
 						],
 						"type": "text/javascript"
 					}
 				}
 			],
+			"protocolProfileBehavior": {
+				"disableUrlEncoding": false
+			},
 			"request": {
 				"method": "POST",
 				"header": [],
@@ -368,17 +376,14 @@
 						{
 							"key": "json_blob",
 							"type": "file",
-							"src": "/C:/Users/arsen/OneDrive/Рабочий стол/файлы для Postman/json_blob.json"
+							"src": "/C:/Users/arsen/OneDrive/Рабочий стол/json_blob.json"
 						}
 					]
 				},
 				"url": {
-					"raw": "https://stage-copy.vashkontrol.ru/reviews.json",
-					"protocol": "https",
+					"raw": "{{BaseURL}}/reviews.json",
 					"host": [
-						"stage-copy",
-						"vashkontrol",
-						"ru"
+						"{{BaseURL}}"
 					],
 					"path": [
 						"reviews.json"
@@ -400,7 +405,9 @@
 							"var cookie = cookiefull.split(';')[0] //Забрать только value, без ;path...\r",
 							"\r",
 							"pm.environment.set(\"Cookie\", cookie)\r",
-							"console.log(cookie)"
+							"console.log(cookie)\r",
+							"\r",
+							""
 						],
 						"type": "text/javascript"
 					}
@@ -476,10 +483,13 @@
 							"    pm.response.to.have.status(200);\r",
 							"});\r",
 							"\r",
+							"\r",
+							"//проверяем, что авторизовались юзером с нужным id\r",
 							"pm.test(\"authorized\", function () {\r",
 							"    var jsonData = pm.response.json();\r",
 							"    pm.expect(jsonData.id).to.eql(8708716);\r",
 							"});\r",
+							"\r",
 							"\r",
 							""
 						],
@@ -530,12 +540,26 @@
 							"});\r",
 							"\r",
 							"//проверяем что в ответе есть номер отзыва, который был получен в ответе при запросе с отправкой blob\r",
-							"pm.test(\"check that response has proper review\", function () {\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData.value).to.eql(pm.environment.review_id);\r",
-							"});\r",
 							"\r",
-							""
+							"//неправильно работает\r",
+							"//pm.test(\"SomeTest\", function () {\r",
+							"    //let jsonData = pm.response.json();\r",
+							"    //pm.expect(jsonData.reviews).to.eql(\r",
+							"//pm.collectionVariables.get(\"{{review_id}}\"));\r",
+							"//});\r",
+							"\r",
+							"\r",
+							"//pm.globals.unset(\"variable_key\");\r",
+							"\r",
+							"var data = JSON.parse(responseBody);   \r",
+							"pm.environment.set(\"id\", data[\"reviews\"][0].id);\r",
+							"\r",
+							"pm.test(\"comparisson\", function () {\r",
+							"var review_id = pm.environment.get('review_id') ;\r",
+							"var id = pm.environment.get('id') ;\r",
+							"\r",
+							"pm.expect(review_id).to.eql (id);\r",
+							"});"
 						],
 						"type": "text/javascript"
 					}
@@ -551,12 +575,9 @@
 					}
 				],
 				"url": {
-					"raw": "https://stage-copy.vashkontrol.ru/cabinet/moderator/event_reviews?page=1&per_page=10",
-					"protocol": "https",
+					"raw": "{{BaseURL}}/cabinet/moderator/event_reviews?page=1&per_page=10",
 					"host": [
-						"stage-copy",
-						"vashkontrol",
-						"ru"
+						"{{BaseURL}}"
 					],
 					"path": [
 						"cabinet",
