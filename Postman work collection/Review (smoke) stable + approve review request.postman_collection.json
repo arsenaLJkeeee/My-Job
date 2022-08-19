@@ -1,0 +1,919 @@
+{
+	"info": {
+		"_postman_id": "38be7a25-8b5e-4480-a3b8-3ede040df04c",
+		"name": "Review (smoke) stable + approve review request",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21661853"
+	},
+	"item": [
+		{
+			"name": "1. authorization moderator",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var cookiefull = postman.getResponseHeader(\"set-cookie\");\r",
+							"//var cookiefull = pm.response.json();\r",
+							"console.log(cookiefull)\r",
+							"var cookie = cookiefull.split(';')[0] //Забрать только value, без ;path...\r",
+							"\r",
+							"pm.environment.set(\"Cookie\", cookie)\r",
+							"console.log(cookie)\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"Cookie\", null)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableCookies": true,
+				"followOriginalHttpMethod": false,
+				"followAuthorizationHeader": false,
+				"followRedirects": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "user[login]",
+							"value": "test8708716@digimatics.ru",
+							"type": "text"
+						},
+						{
+							"key": "user[password]",
+							"value": "extnrflkzntcnf",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{BaseURL}}/users/sign_in",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"users",
+						"sign_in"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2. authorization check (current) Copy",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const jar = pm.cookies.jar();\r",
+							"\r",
+							"jar.clear(pm.request.url, function (error) {\r",
+							"  // error - <Error>\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"//проверяем, что авторизовались юзером с нужным id\r",
+							"pm.test(\"authorized\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.id).to.eql(8708716);\r",
+							"});\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disableCookies": true,
+				"followRedirects": false
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "{{Cookie}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{BaseURL}}/users/current",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"users",
+						"current"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "3. premoderation",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const jar = pm.cookies.jar();\r",
+							"\r",
+							"jar.clear(pm.request.url, function (error) {\r",
+							"  // error - <Error>\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//проверяем, что режим премодерации выключен, иначе предыдущий отзыв не будет виден в списке обращений//\r",
+							"\r",
+							"//pm.test(\"check_that_premoderation_is_disabled\", function () {\r",
+							"    //var jsonData = pm.response.json();\r",
+							"   // pm.expect(jsonData.mode).to.eql('0');\r",
+							"//});\r",
+							"\r",
+							"var data = JSON.parse(responseBody);   \r",
+							"pm.environment.set('mode', data.mode);\r",
+							"\r",
+							"var data1 = (pm.environment.get('mode'));\r",
+							"if (data1 == 0) \r",
+							"  {postman.setNextRequest(\"SwitchToggle\")\r",
+							"}\r",
+							"\r",
+							"else {\r",
+							"    postman.setNextRequest(\"4. authorization admin\");\r",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disableCookies": true,
+				"followRedirects": false
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "{{Cookie}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{BaseURL}}/cabinet/moderator/premoderation",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"cabinet",
+						"moderator",
+						"premoderation"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "4. authorization admin",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var cookiefull = postman.getResponseHeader(\"set-cookie\");\r",
+							"//var cookiefull = pm.response.json();\r",
+							"console.log(cookiefull)\r",
+							"var cookie = cookiefull.split(';')[0] //Забрать только value, без ;path...\r",
+							"\r",
+							"pm.environment.set(\"Cookie\", cookie)\r",
+							"console.log(cookie)"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"Cookie\", null)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableCookies": true,
+				"followOriginalHttpMethod": false,
+				"followAuthorizationHeader": false,
+				"followRedirects": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "user[login]",
+							"value": "admin@example.com",
+							"type": "text"
+						},
+						{
+							"key": "user[password]",
+							"value": "extnrflkzntcnf",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{BaseURL}}/users/sign_in",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"users",
+						"sign_in"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "5. authorization check (current)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const jar = pm.cookies.jar();\r",
+							"\r",
+							"jar.clear(pm.request.url, function (error) {\r",
+							"  // error - <Error>\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"//проверяем что мы авторизовались админом по id\r",
+							"pm.test(\"authorized\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.id).to.eql(8708710);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disableCookies": true,
+				"followRedirects": false
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "{{Cookie}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{BaseURL}}/users/current",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"users",
+						"current"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "6. choosereview",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "{{Cookie}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{BaseURL}}/choosereview",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"choosereview"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "7. choose fast search",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Body matches pending_reviews\", function () {\r",
+							"    pm.expect(pm.response.text()).to.include(\"pending_reviews\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "{{Cookie}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{BaseURL}}/users/pending_reviews.json",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"users",
+						"pending_reviews.json"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "8. searching for кадаст value",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"//проверяем то, что при наборе текста \"кадаст\" в ответе есть результаты с паттерном \"кадаст\"\r",
+							"pm.test(\"dropdown has кадаст result\", function () {\r",
+							"    pm.expect(pm.response.text()).to.include(\"кадаст\");\r",
+							"});\r",
+							"\r",
+							"//берем authorityRegId первого по счету айтема из дропдауна и кладем его в env  \r",
+							"var data = JSON.parse(responseBody);   \r",
+							"pm.environment.set(\"authorityRegId\", data[0].authorityRegId);\r",
+							"pm.environment.set(\"serviceRegId\", data[0].regId);\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "{{Cookie}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "\"кадаст\""
+				},
+				"url": {
+					"raw": "{{BaseURL}}/fts/services.json?query=%22%D0%BA%D0%B0%D0%B4%D0%B0%D1%81%D1%82%22",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"fts",
+						"services.json"
+					],
+					"query": [
+						{
+							"key": "query",
+							"value": "%22%D0%BA%D0%B0%D0%B4%D0%B0%D1%81%D1%82%22"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "9. select first dropdown item",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"//проверяем, что в ответе RegId ведомства совпадает с тем, что пошло в env в предыдущем запросе\r",
+							"pm.test(\"check that response has authorityRegId from environment\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.value).to.eql(pm.environment.authorityRegId);\r",
+							"});\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "{{Cookie}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{BaseURL}}/fts/authorities_by_service.json?reg_id={{serviceRegId}}",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"fts",
+						"authorities_by_service.json"
+					],
+					"query": [
+						{
+							"key": "reg_id",
+							"value": "{{serviceRegId}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "10. pending blob.json with attributes",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"\r",
+							"\r",
+							"\r",
+							"// Проверяем, что в бади есть стринг review_id, но не более 3 отзывов за сутки по одной услуге, иначе будет фэйл и надо будет менять номер объекта в массивах в 5 запросе seatching for кадаст (запрос номер 5) на следующий([0]->[1]) и записывать его reg_id и authority_reg_id в json.blob\r",
+							"\r",
+							"pm.test(\"Body contains review_id\", function () {\r",
+							"    pm.expect(pm.response.text()).to.include(\"review_id\");\r",
+							"});\r",
+							"\r",
+							"var data = JSON.parse(responseBody);   \r",
+							"pm.environment.set(\"review_id\", data.review_id);\r",
+							"//при одиночном запуске запроса все отлично, а при запуске коллекции падает на //этом запросе ругаясь jsonExpect \"<\"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableUrlEncoding": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "json_blob",
+							"type": "file",
+							"src": "json_blob.json"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{BaseURL}}/reviews.json",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"reviews.json"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "11. authorization moderator",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var cookiefull = postman.getResponseHeader(\"set-cookie\");\r",
+							"//var cookiefull = pm.response.json();\r",
+							"console.log(cookiefull)\r",
+							"var cookie = cookiefull.split(';')[0] //Забрать только value, без ;path...\r",
+							"\r",
+							"pm.environment.set(\"Cookie\", cookie)\r",
+							"console.log(cookie)\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"Cookie\", null)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableCookies": true,
+				"followOriginalHttpMethod": false,
+				"followAuthorizationHeader": false,
+				"followRedirects": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "user[login]",
+							"value": "test8708716@digimatics.ru",
+							"type": "text"
+						},
+						{
+							"key": "user[password]",
+							"value": "extnrflkzntcnf",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{BaseURL}}/users/sign_in",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"users",
+						"sign_in"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "12. authorization check (current)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const jar = pm.cookies.jar();\r",
+							"\r",
+							"jar.clear(pm.request.url, function (error) {\r",
+							"  // error - <Error>\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"//проверяем, что авторизовались юзером с нужным id\r",
+							"pm.test(\"authorized\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.id).to.eql(8708716);\r",
+							"});\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disableCookies": true,
+				"followRedirects": false
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "{{Cookie}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{BaseURL}}/users/current",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"users",
+						"current"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "13. check that response has id of review",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"//проверяем что в ответе есть номер отзыва, который был получен в ответе при запросе с отправкой blob\r",
+							"\r",
+							"\r",
+							"\r",
+							"var data = JSON.parse(responseBody);   \r",
+							"pm.environment.set(\"id\", data[\"reviews\"][0].id);\r",
+							"\r",
+							"pm.test(\"compare_id_from_response_to_id_from_env\", function () {\r",
+							"var review_id = pm.environment.get('review_id') ;\r",
+							"var id = pm.environment.get('id') ;\r",
+							"\r",
+							"pm.expect(review_id).to.eql (id);\r",
+							"});\r",
+							"\r",
+							"postman.setNextRequest(null);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "{{Cookie}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{BaseURL}}/cabinet/moderator/event_reviews?page=1&per_page=10",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"cabinet",
+						"moderator",
+						"event_reviews"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "per_page",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "14. approve review",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"review_has_approve_status\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.status).to.eql('approve');\r",
+							"});\r",
+							"\r",
+							"//все работает, осталось только в резульате отправленного отзвыа взять положительный он или отрицательный, присвоить этмоу условию переменную в окружение и подставлять его в бади в 14 запрос если положительный то flag positive  если отрицательный то флаг negative\r",
+							"\r",
+							"//x.reviews[0].flag"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var get_review_value = pm.environment.get('review_id');\r",
+							"var string_into_int = parseInt(get_review_value);\r",
+							"//\r",
+							"pm.environment.set(\"review_id\", string_into_int);\r",
+							"//console.log(string_into_int) на это этапе конвертируется успешно, но все равно запрос не одобряет отзыв\r",
+							"var proverka = pm.environment.get('review_id');\r",
+							"console.log(proverka)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "{{Cookie}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": {{review_id}},\r\n    \"reason\": \"Отзыв не соответствует требованиям портала, либо не содержит вопроса.\",\r\n    \"flag\": \"positive\",\r\n    \"item_ids\": [\r\n        1,\r\n        2,\r\n        3,\r\n        4,\r\n        5,\r\n        6,\r\n        7\r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BaseURL}}/cabinet/moderator/event_reviews/{{review_id}}/moderate?moderate_action=approve_it",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"cabinet",
+						"moderator",
+						"event_reviews",
+						"{{review_id}}",
+						"moderate"
+					],
+					"query": [
+						{
+							"key": "moderate_action",
+							"value": "approve_it"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SwitchToggle",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"postman.setNextRequest(\"4. authorization admin\")"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "{{Cookie}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{BaseURL}}/cabinet/moderator/premoderation/toggle",
+					"host": [
+						"{{BaseURL}}"
+					],
+					"path": [
+						"cabinet",
+						"moderator",
+						"premoderation",
+						"toggle"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
